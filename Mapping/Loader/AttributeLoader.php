@@ -53,15 +53,15 @@ class AttributeLoader implements LoaderInterface
         $className = $reflectionClass->name;
         $loaded = false;
         $classGroups = [];
-        $classContextAnnotation = null;
+        $classContextAttribute = null;
 
         $attributesMetadata = $classMetadata->getAttributesMetadata();
 
-        foreach ($this->loadAttributes($reflectionClass) as $annotation) {
+        foreach ($this->loadAttributes($reflectionClass) as $attribute) {
             match (true) {
-                $annotation instanceof DiscriminatorMap => $classMetadata->setClassDiscriminatorMapping(new ClassDiscriminatorMapping($annotation->getTypeProperty(), $annotation->getMapping())),
-                $annotation instanceof Groups => $classGroups = $annotation->getGroups(),
-                $annotation instanceof Context => $classContextAnnotation = $annotation,
+                $attribute instanceof DiscriminatorMap => $classMetadata->setClassDiscriminatorMapping(new ClassDiscriminatorMapping($attribute->getTypeProperty(), $attribute->getMapping())),
+                $attribute instanceof Groups => $classGroups = $attribute->getGroups(),
+                $attribute instanceof Context => $classContextAttribute = $attribute,
                 default => null,
             };
         }
@@ -74,19 +74,19 @@ class AttributeLoader implements LoaderInterface
 
             $attributeMetadata = $attributesMetadata[$property->name];
             if ($property->getDeclaringClass()->name === $className) {
-                if ($classContextAnnotation) {
-                    $this->setAttributeContextsForGroups($classContextAnnotation, $attributeMetadata);
+                if ($classContextAttribute) {
+                    $this->setAttributeContextsForGroups($classContextAttribute, $attributeMetadata);
                 }
 
                 foreach ($classGroups as $group) {
                     $attributeMetadata->addGroup($group);
                 }
 
-                foreach ($this->loadAttributes($property) as $annotation) {
+                foreach ($this->loadAttributes($property) as $attribute) {
                     $loaded = true;
 
-                    if ($annotation instanceof Groups) {
-                        foreach ($annotation->getGroups() as $group) {
+                    if ($attribute instanceof Groups) {
+                        foreach ($attribute->getGroups() as $group) {
                             $attributeMetadata->addGroup($group);
                         }
 
@@ -94,11 +94,11 @@ class AttributeLoader implements LoaderInterface
                     }
 
                     match (true) {
-                        $annotation instanceof MaxDepth => $attributeMetadata->setMaxDepth($annotation->getMaxDepth()),
-                        $annotation instanceof SerializedName => $attributeMetadata->setSerializedName($annotation->getSerializedName()),
-                        $annotation instanceof SerializedPath => $attributeMetadata->setSerializedPath($annotation->getSerializedPath()),
-                        $annotation instanceof Ignore => $attributeMetadata->setIgnore(true),
-                        $annotation instanceof Context => $this->setAttributeContextsForGroups($annotation, $attributeMetadata),
+                        $attribute instanceof MaxDepth => $attributeMetadata->setMaxDepth($attribute->getMaxDepth()),
+                        $attribute instanceof SerializedName => $attributeMetadata->setSerializedName($attribute->getSerializedName()),
+                        $attribute instanceof SerializedPath => $attributeMetadata->setSerializedPath($attribute->getSerializedPath()),
+                        $attribute instanceof Ignore => $attributeMetadata->setIgnore(true),
+                        $attribute instanceof Context => $this->setAttributeContextsForGroups($attribute, $attributeMetadata),
                         default => null,
                     };
                 }
@@ -126,43 +126,43 @@ class AttributeLoader implements LoaderInterface
                 }
             }
 
-            foreach ($this->loadAttributes($method) as $annotation) {
-                if ($annotation instanceof Groups) {
+            foreach ($this->loadAttributes($method) as $attribute) {
+                if ($attribute instanceof Groups) {
                     if (!$accessorOrMutator) {
                         throw new MappingException(\sprintf('Groups on "%s::%s()" cannot be added. Groups can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    foreach ($annotation->getGroups() as $group) {
+                    foreach ($attribute->getGroups() as $group) {
                         $attributeMetadata->addGroup($group);
                     }
-                } elseif ($annotation instanceof MaxDepth) {
+                } elseif ($attribute instanceof MaxDepth) {
                     if (!$accessorOrMutator) {
                         throw new MappingException(\sprintf('MaxDepth on "%s::%s()" cannot be added. MaxDepth can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    $attributeMetadata->setMaxDepth($annotation->getMaxDepth());
-                } elseif ($annotation instanceof SerializedName) {
+                    $attributeMetadata->setMaxDepth($attribute->getMaxDepth());
+                } elseif ($attribute instanceof SerializedName) {
                     if (!$accessorOrMutator) {
                         throw new MappingException(\sprintf('SerializedName on "%s::%s()" cannot be added. SerializedName can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    $attributeMetadata->setSerializedName($annotation->getSerializedName());
-                } elseif ($annotation instanceof SerializedPath) {
+                    $attributeMetadata->setSerializedName($attribute->getSerializedName());
+                } elseif ($attribute instanceof SerializedPath) {
                     if (!$accessorOrMutator) {
                         throw new MappingException(\sprintf('SerializedPath on "%s::%s()" cannot be added. SerializedPath can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    $attributeMetadata->setSerializedPath($annotation->getSerializedPath());
-                } elseif ($annotation instanceof Ignore) {
+                    $attributeMetadata->setSerializedPath($attribute->getSerializedPath());
+                } elseif ($attribute instanceof Ignore) {
                     if ($accessorOrMutator) {
                         $attributeMetadata->setIgnore(true);
                     }
-                } elseif ($annotation instanceof Context) {
+                } elseif ($attribute instanceof Context) {
                     if (!$accessorOrMutator) {
                         throw new MappingException(\sprintf('Context on "%s::%s()" cannot be added. Context can only be added on methods beginning with "get", "is", "has" or "set".', $className, $method->name));
                     }
 
-                    $this->setAttributeContextsForGroups($annotation, $attributeMetadata);
+                    $this->setAttributeContextsForGroups($attribute, $attributeMetadata);
                 }
 
                 $loaded = true;
@@ -195,12 +195,12 @@ class AttributeLoader implements LoaderInterface
         }
     }
 
-    private function setAttributeContextsForGroups(Context $annotation, AttributeMetadataInterface $attributeMetadata): void
+    private function setAttributeContextsForGroups(Context $attribute, AttributeMetadataInterface $attributeMetadata): void
     {
-        $context = $annotation->getContext();
-        $groups = $annotation->getGroups();
-        $normalizationContext = $annotation->getNormalizationContext();
-        $denormalizationContext = $annotation->getDenormalizationContext();
+        $context = $attribute->getContext();
+        $groups = $attribute->getGroups();
+        $normalizationContext = $attribute->getNormalizationContext();
+        $denormalizationContext = $attribute->getDenormalizationContext();
 
         if ($normalizationContext || $context) {
             $attributeMetadata->setNormalizationContextForGroups($normalizationContext ?: $context, $groups);
