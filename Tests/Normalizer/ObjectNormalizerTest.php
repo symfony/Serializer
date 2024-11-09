@@ -507,8 +507,6 @@ class ObjectNormalizerTest extends TestCase
                 'bar' => null,
                 'foo_bar' => '@dunglas',
                 'symfony' => '@coopTilleuls',
-                'default' => null,
-                'class_name' => null,
             ],
             $this->normalizer->normalize($obj, null, [ObjectNormalizer::GROUPS => ['name_converter']])
         );
@@ -963,6 +961,24 @@ class ObjectNormalizerTest extends TestCase
         $normalizer = new ObjectNormalizer(new ClassMetadataFactory(new AttributeLoader()));
         $this->assertSame([], $normalizer->normalize($class));
     }
+
+    public function testNormalizeWithMethodNamesSimilarToAccessors()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new ObjectNormalizer($classMetadataFactory);
+
+        $object = new ObjectWithAccessorishMethods();
+        $normalized = $normalizer->normalize($object);
+
+        $this->assertFalse($object->isAccessorishCalled());
+        $this->assertSame([
+            'accessorishCalled' => false,
+            'tell' => true,
+            'class' => true,
+            'responsibility' => true,
+            123 => 321
+        ], $normalized);
+    }
 }
 
 class ProxyObjectDummy extends ObjectDummy
@@ -1244,4 +1260,64 @@ class ObjectDummyWithIgnoreAttributeAndPrivateProperty
     public $ignored = 'ignored';
 
     private $private = 'private';
+}
+
+class ObjectWithAccessorishMethods
+{
+    private $accessorishCalled = false;
+
+    public function isAccessorishCalled()
+    {
+        return $this->accessorishCalled;
+    }
+
+    public function cancel()
+    {
+        $this->accessorishCalled = true;
+    }
+
+    public function hash()
+    {
+        $this->accessorishCalled = true;
+    }
+
+    public function canTell()
+    {
+        return true;
+    }
+
+    public function getClass()
+    {
+        return true;
+    }
+
+    public function hasResponsibility()
+    {
+        return true;
+    }
+
+    public function get_foo()
+    {
+        return 'bar';
+    }
+
+    public function get123()
+    {
+        return 321;
+    }
+
+    public function gettings()
+    {
+        $this->accessorishCalled = true;
+    }
+
+    public function settings()
+    {
+        $this->accessorishCalled = true;
+    }
+
+    public function isolate()
+    {
+        $this->accessorishCalled = true;
+    }
 }

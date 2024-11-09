@@ -302,8 +302,6 @@ class GetSetMethodNormalizerTest extends TestCase
                 'bar' => null,
                 'foo_bar' => '@dunglas',
                 'symfony' => '@coopTilleuls',
-                'default' => null,
-                'class_name' => null,
             ],
             $this->normalizer->normalize($obj, null, [GetSetMethodNormalizer::GROUPS => ['name_converter']])
         );
@@ -521,6 +519,14 @@ class GetSetMethodNormalizerTest extends TestCase
         $normalizer = new GetSetMethodNormalizer($classMetadataFactory, null, null, $discriminator);
 
         $this->assertSame(['type' => 'one', 'url' => 'URL_ONE'], $normalizer->normalize(new GetSetMethodDiscriminatedDummyOne()));
+    }
+
+    public function testNormalizeWithMethodNamesSimilarToAccessors()
+    {
+        $classMetadataFactory = new ClassMetadataFactory(new AttributeLoader());
+        $normalizer = new GetSetMethodNormalizer($classMetadataFactory);
+
+        $this->assertSame(['class' => 'class', 123 => 123], $normalizer->normalize(new GetSetWithAccessorishMethod()));
     }
 
     public function testDenormalizeWithDiscriminator()
@@ -908,5 +914,48 @@ class GetSetDummyWithOptionalAndMultipleSetterArgs
     public function setBar($bar = null, $other = true)
     {
         $this->bar = $bar;
+    }
+}
+
+class GetSetWithAccessorishMethod
+{
+    public function cancel()
+    {
+        return 'cancel';
+    }
+
+    public function hash()
+    {
+        return 'hash';
+    }
+
+    public function getClass()
+    {
+        return 'class';
+    }
+
+    public function setClass()
+    {
+    }
+
+    public function get123()
+    {
+        return 123;
+    }
+
+    public function set123()
+    {
+    }
+
+    public function gettings()
+    {
+    }
+
+    public function settings()
+    {
+    }
+
+    public function isolate()
+    {
     }
 }

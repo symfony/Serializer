@@ -27,10 +27,6 @@ class GroupDummy extends GroupDummyParent implements GroupDummyInterface
     protected $quux;
     private $fooBar;
     private $symfony;
-    #[Groups(['Default'])]
-    private $default;
-    #[Groups(['GroupDummy'])]
-    private $className;
 
     #[Groups(['b'])]
     public function setBar($bar)
@@ -83,25 +79,5 @@ class GroupDummy extends GroupDummyParent implements GroupDummyInterface
     public function setQuux($quux): void
     {
         $this->quux = $quux;
-    }
-
-    public function setDefault($default)
-    {
-        $this->default = $default;
-    }
-
-    public function getDefault()
-    {
-        return $this->default;
-    }
-
-    public function setClassName($className)
-    {
-        $this->className = $className;
-    }
-
-    public function getClassName()
-    {
-        return $this->className;
     }
 }
