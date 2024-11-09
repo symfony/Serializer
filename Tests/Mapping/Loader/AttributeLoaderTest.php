@@ -23,6 +23,7 @@ use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummyFirstChild;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummySecondChild;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AbstractDummyThirdChild;
+use Symfony\Component\Serializer\Tests\Fixtures\Attributes\AccessorishGetters;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\BadAttributeDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\BadMethodContextDummy;
 use Symfony\Component\Serializer\Tests\Fixtures\Attributes\ContextDummyParent;
@@ -227,6 +228,22 @@ class AttributeLoaderTest extends TestCase
         $classMetadata = new ClassMetadata(BadAttributeDummy::class);
 
         $this->loader->loadClassMetadata($classMetadata);
+    }
+
+    public function testIgnoresAccessorishGetters()
+    {
+        $classMetadata = new ClassMetadata(AccessorishGetters::class);
+        $this->loader->loadClassMetadata($classMetadata);
+
+        $attributesMetadata = $classMetadata->getAttributesMetadata();
+
+        self::assertCount(4, $classMetadata->getAttributesMetadata());
+
+        self::assertArrayHasKey('field1', $attributesMetadata);
+        self::assertArrayHasKey('field2', $attributesMetadata);
+        self::assertArrayHasKey('field3', $attributesMetadata);
+        self::assertArrayHasKey('field4', $attributesMetadata);
+        self::assertArrayNotHasKey('h', $attributesMetadata);
     }
 
     protected function getLoaderForContextMapping(): AttributeLoader
