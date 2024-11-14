@@ -938,7 +938,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
      */
     private function getPropertyType(string $className, string $property): Type|array|null
     {
-        if (method_exists($this->propertyTypeExtractor, 'getType')) {
+        if (class_exists(Type::class) && method_exists($this->propertyTypeExtractor, 'getType')) {
             return $this->propertyTypeExtractor->getType($className, $property);
         }
 
