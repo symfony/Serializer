@@ -4,8 +4,8 @@ CHANGELOG
 7.2
 ---
 
- * Deprecate the `csv_escape_char` context option of `CsvEncoder` and the `CsvEncoder::ESCAPE_CHAR_KEY` constant
- * Deprecate `CsvEncoderContextBuilder::withEscapeChar()` method
+ * Deprecate the `csv_escape_char` context option of `CsvEncoder`, the `CsvEncoder::ESCAPE_CHAR_KEY` constant
+   and the `CsvEncoderContextBuilder::withEscapeChar()` method, following its deprecation in PHP 8.4
  * Add `SnakeCaseToCamelCaseNameConverter`
  * Support subclasses of `\DateTime` and `\DateTimeImmutable` for denormalization
  * Add the `UidNormalizer::NORMALIZATION_FORMAT_RFC9562` constant
