@@ -149,7 +149,7 @@ class XmlEncoderTest extends TestCase
             ],
         ];
 
-        yield 'encode remvoing empty tags' => [
+        yield 'encode removing empty tags' => [
             '<?xml version="1.0"?>'."\n".
             '<response><person><firstname>Peter</firstname></person></response>'."\n",
             ['person' => ['firstname' => 'Peter', 'lastname' => null]],
