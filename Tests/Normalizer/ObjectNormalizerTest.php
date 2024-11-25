@@ -976,7 +976,7 @@ class ObjectNormalizerTest extends TestCase
             'tell' => true,
             'class' => true,
             'responsibility' => true,
-            123 => 321
+            123 => 321,
         ], $normalized);
     }
 }
