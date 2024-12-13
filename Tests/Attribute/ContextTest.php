@@ -86,7 +86,7 @@ Symfony\Component\Serializer\Attribute\Context {
   -normalizationContext: []
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with normalization context option' => [
@@ -100,7 +100,7 @@ Symfony\Component\Serializer\Attribute\Context {
   ]
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with denormalization context option' => [
@@ -114,7 +114,7 @@ Symfony\Component\Serializer\Attribute\Context {
     "foo" => "bar",
   ]
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with groups option as string' => [
@@ -130,7 +130,7 @@ Symfony\Component\Serializer\Attribute\Context {
   -normalizationContext: []
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
 
         yield 'named arguments: with groups option as array' => [
@@ -147,7 +147,7 @@ Symfony\Component\Serializer\Attribute\Context {
   -normalizationContext: []
   -denormalizationContext: []
 }
-DUMP
+DUMP,
         ];
     }
 }
