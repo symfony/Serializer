@@ -1587,7 +1587,7 @@ class TruePropertyDummy
 
 class BoolPropertyDummy
 {
-    /** @var null|bool */
+    /** @var bool|null */
     public $foo;
 }
 
