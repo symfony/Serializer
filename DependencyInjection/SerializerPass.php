@@ -19,6 +19,8 @@ use Symfony\Component\DependencyInjection\Exception\RuntimeException;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Serializer\Debug\TraceableEncoder;
 use Symfony\Component\Serializer\Debug\TraceableNormalizer;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -152,6 +154,8 @@ class SerializerPass implements CompilerPassInterface
 
             $container->registerChild($serializerId, 'serializer');
             $container->registerAliasForArgument($serializerId, SerializerInterface::class, $serializerName.'.serializer');
+            $container->registerAliasForArgument($serializerId, NormalizerInterface::class, $serializerName.'.normalizer');
+            $container->registerAliasForArgument($serializerId, DenormalizerInterface::class, $serializerName.'.denormalizer');
 
             $this->configureSerializer($container, $serializerId, $normalizers, $encoders, $serializerName);
 

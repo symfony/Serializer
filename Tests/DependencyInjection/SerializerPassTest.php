@@ -19,6 +19,8 @@ use Symfony\Component\Serializer\Debug\TraceableEncoder;
 use Symfony\Component\Serializer\Debug\TraceableNormalizer;
 use Symfony\Component\Serializer\Debug\TraceableSerializer;
 use Symfony\Component\Serializer\DependencyInjection\SerializerPass;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
@@ -591,6 +593,8 @@ class SerializerPassTest extends TestCase
         $this->assertTrue($container->hasAlias(\sprintf('%s $apiSerializer', SerializerInterface::class)));
         $this->assertTrue($container->hasDefinition('serializer.api2'));
         $this->assertTrue($container->hasAlias(\sprintf('%s $api2Serializer', SerializerInterface::class)));
+        $this->assertTrue($container->hasAlias(\sprintf('%s $api2Normalizer', NormalizerInterface::class)));
+        $this->assertTrue($container->hasAlias(\sprintf('%s $api2Denormalizer', DenormalizerInterface::class)));
     }
 
     public function testNormalizersAndEncodersAreDecoratedAndOrderedWhenCollectingDataForNamedSerializers()
