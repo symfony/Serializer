@@ -5,6 +5,7 @@ CHANGELOG
 ---
 
  * Deprecate the `CompiledClassMetadataFactory` and `CompiledClassMetadataCacheWarmer` classes
+ * Register `NormalizerInterface` and `DenormalizerInterface` aliases for named serializers
 
 7.2
 ---
