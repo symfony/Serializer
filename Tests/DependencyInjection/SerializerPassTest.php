@@ -556,7 +556,7 @@ class SerializerPassTest extends TestCase
             'api' => ['default_context' => $defaultContext = ['enable_max_depth' => true]],
         ]);
 
-        $container->register('serializer')->setArguments([null, null]);
+        $container->register('serializer')->setArguments([null, null, []]);
         $definition = $container->register('n1')
             ->addTag('serializer.normalizer', ['serializer' => '*'])
             ->addTag('serializer.encoder', ['serializer' => '*'])
@@ -570,6 +570,8 @@ class SerializerPassTest extends TestCase
         $bindings = $container->getDefinition('n1.api')->getBindings();
         $this->assertArrayHasKey('array $defaultContext', $bindings);
         $this->assertEquals($bindings['array $defaultContext'], new BoundArgument($defaultContext, false));
+        $this->assertArrayNotHasKey('$defaultContext', $container->getDefinition('serializer')->getArguments());
+        $this->assertEquals($defaultContext, $container->getDefinition('serializer.api')->getArgument('$defaultContext'));
     }
 
     public function testNamedSerializersAreRegistered()
