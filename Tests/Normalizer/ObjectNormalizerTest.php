@@ -85,14 +85,11 @@ class ObjectNormalizerTest extends TestCase
     use TypeEnforcementTestTrait;
 
     private ObjectNormalizer $normalizer;
-    private NormalizerInterface $normalizerInterface;
     private SerializerInterface&NormalizerInterface&MockObject $serializer;
 
     protected function setUp(): void
     {
         $this->createNormalizer();
-
-        $this->normalizerInterface = $this->normalizer;
     }
 
     private function createNormalizer(array $defaultContext = [], ?ClassMetadataFactoryInterface $classMetadataFactory = null): void
