@@ -17,11 +17,6 @@ use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
 use Symfony\Component\Serializer\Normalizer\NumberNormalizer;
 
-/**
- * @requires PHP 8.4
- * @requires extension bcmath
- * @requires extension gmp
- */
 class NumberNormalizerTest extends TestCase
 {
     private NumberNormalizer $normalizer;
@@ -41,8 +36,14 @@ class NumberNormalizerTest extends TestCase
 
     public static function supportsNormalizationProvider(): iterable
     {
-        yield 'GMP object' => [new \GMP('0b111'), true];
-        yield 'Number object' => [new Number('1.23'), true];
+        if (class_exists(\GMP::class)) {
+            yield 'GMP object' => [new \GMP('0b111'), true];
+        }
+
+        if (class_exists(Number::class)) {
+            yield 'Number object' => [new Number('1.23'), true];
+        }
+
         yield 'object with similar properties as Number' => [(object) ['value' => '1.23', 'scale' => 2], false];
         yield 'stdClass' => [new \stdClass(), false];
         yield 'string' => ['1.23', false];
@@ -51,20 +52,40 @@ class NumberNormalizerTest extends TestCase
     }
 
     /**
-     * @dataProvider normalizeGoodValueProvider
+     * @requires extension bcmath
+     *
+     * @dataProvider normalizeGoodBcMathNumberValueProvider
      */
-    public function testNormalize(mixed $data, mixed $expected)
+    public function testNormalizeBcMathNumber(Number $data, string $expected)
     {
         $this->assertSame($expected, $this->normalizer->normalize($data));
     }
 
-    public static function normalizeGoodValueProvider(): iterable
+    public static function normalizeGoodBcMathNumberValueProvider(): iterable
     {
-        yield 'Number with scale=2' => [new Number('1.23'), '1.23'];
-        yield 'Number with scale=0' => [new Number('1'), '1'];
-        yield 'Number with integer' => [new Number(123), '123'];
-        yield 'GMP hex' => [new \GMP('0x10'), '16'];
-        yield 'GMP base=10' => [new \GMP('10'), '10'];
+        if (class_exists(Number::class)) {
+            yield 'Number with scale=2' => [new Number('1.23'), '1.23'];
+            yield 'Number with scale=0' => [new Number('1'), '1'];
+            yield 'Number with integer' => [new Number(123), '123'];
+        }
+    }
+
+    /**
+     * @requires extension gmp
+     *
+     * @dataProvider normalizeGoodGmpValueProvider
+     */
+    public function testNormalizeGmp(\GMP $data, string $expected)
+    {
+        $this->assertSame($expected, $this->normalizer->normalize($data));
+    }
+
+    public static function normalizeGoodGmpValueProvider(): iterable
+    {
+        if (class_exists(\GMP::class)) {
+            yield 'GMP hex' => [new \GMP('0x10'), '16'];
+            yield 'GMP base=10' => [new \GMP('10'), '10'];
+        }
     }
 
     /**
@@ -86,41 +107,70 @@ class NumberNormalizerTest extends TestCase
     }
 
     /**
-     * @dataProvider supportsDenormalizationProvider
+     * @requires PHP 8.4
+     * @requires extension bcmath
      */
-    public function testSupportsDenormalization(mixed $data, string $type, bool $expected)
+    public function testSupportsBcMathNumberDenormalization()
     {
-        $this->assertSame($expected, $this->normalizer->supportsDenormalization($data, $type));
-    }
-
-    public static function supportsDenormalizationProvider(): iterable
-    {
-        yield 'null value, Number' => [null, Number::class, false];
-        yield 'null value, GMP' => [null, \GMP::class, false];
-        yield 'null value, unmatching type' => [null, \stdClass::class, false];
+        $this->assertFalse($this->normalizer->supportsDenormalization(null, Number::class));
     }
 
     /**
-     * @dataProvider denormalizeGoodValueProvider
+     * @requires extension gmp
      */
-    public function testDenormalize(mixed $data, string $type, mixed $expected)
+    public function testSupportsGmpDenormalization()
+    {
+        $this->assertFalse($this->normalizer->supportsDenormalization(null, \GMP::class));
+    }
+
+    public function testDoesNotSupportOtherValuesDenormalization()
+    {
+        $this->assertFalse($this->normalizer->supportsDenormalization(null, \stdClass::class));
+    }
+
+    /**
+     * @requires PHP 8.4
+     * @requires extension bcmath
+     *
+     * @dataProvider denormalizeGoodBcMathNumberValueProvider
+     */
+    public function testDenormalizeBcMathNumber(string|int $data, string $type, Number $expected)
     {
         $this->assertEquals($expected, $this->normalizer->denormalize($data, $type));
     }
 
-    public static function denormalizeGoodValueProvider(): iterable
+    public static function denormalizeGoodBcMathNumberValueProvider(): iterable
     {
-        yield 'Number, string with decimal point' => ['1.23', Number::class, new Number('1.23')];
-        yield 'Number, integer as string' => ['123', Number::class, new Number('123')];
-        yield 'Number, integer' => [123, Number::class, new Number('123')];
-        yield 'GMP, large number' => ['9223372036854775808', \GMP::class, new \GMP('9223372036854775808')];
-        yield 'GMP, integer' => [123, \GMP::class, new \GMP('123')];
+        if (class_exists(Number::class)) {
+            yield 'Number, string with decimal point' => ['1.23', Number::class, new Number('1.23')];
+            yield 'Number, integer as string' => ['123', Number::class, new Number('123')];
+            yield 'Number, integer' => [123, Number::class, new Number('123')];
+        }
     }
 
     /**
-     * @dataProvider denormalizeBadValueProvider
+     * @dataProvider denormalizeGoodGmpValueProvider
      */
-    public function testDenormalizeBadValueThrows(mixed $data, string $type, string $expectedException, string $expectedExceptionMessage)
+    public function testDenormalizeGmp(string|int $data, string $type, \GMP $expected)
+    {
+        $this->assertEquals($expected, $this->normalizer->denormalize($data, $type));
+    }
+
+    public static function denormalizeGoodGmpValueProvider(): iterable
+    {
+        if (class_exists(\GMP::class)) {
+            yield 'GMP, large number' => ['9223372036854775808', \GMP::class, new \GMP('9223372036854775808')];
+            yield 'GMP, integer' => [123, \GMP::class, new \GMP('123')];
+        }
+    }
+
+    /**
+     * @requires PHP 8.4
+     * @requires extension bcmath
+     *
+     * @dataProvider denormalizeBadBcMathNumberValueProvider
+     */
+    public function testDenormalizeBadBcMathNumberValueThrows(mixed $data, string $type, string $expectedException, string $expectedExceptionMessage)
     {
         $this->expectException($expectedException);
         $this->expectExceptionMessage($expectedExceptionMessage);
@@ -128,7 +178,7 @@ class NumberNormalizerTest extends TestCase
         $this->normalizer->denormalize($data, $type);
     }
 
-    public static function denormalizeBadValueProvider(): iterable
+    public static function denormalizeBadBcMathNumberValueProvider(): iterable
     {
         $stringOrDecimalExpectedMessage = 'The data must be a "string" representing a decimal number, or an "int".';
         yield 'Number, null' => [null, Number::class, NotNormalizableValueException::class, $stringOrDecimalExpectedMessage];
@@ -136,7 +186,23 @@ class NumberNormalizerTest extends TestCase
         yield 'Number, object' => [new \stdClass(), Number::class, NotNormalizableValueException::class, $stringOrDecimalExpectedMessage];
         yield 'Number, non-numeric string' => ['foobar', Number::class, NotNormalizableValueException::class, $stringOrDecimalExpectedMessage];
         yield 'Number, float' => [1.23, Number::class, NotNormalizableValueException::class, $stringOrDecimalExpectedMessage];
+    }
 
+    /**
+     * @requires extension gmp
+     *
+     * @dataProvider denormalizeBadGmpValueProvider
+     */
+    public function testDenormalizeBadGmpValueThrows(mixed $data, string $type, string $expectedException, string $expectedExceptionMessage)
+    {
+        $this->expectException($expectedException);
+        $this->expectExceptionMessage($expectedExceptionMessage);
+
+        $this->normalizer->denormalize($data, $type);
+    }
+
+    public static function denormalizeBadGmpValueProvider(): iterable
+    {
         $stringOrIntExpectedMessage = 'The data must be a "string" representing an integer, or an "int".';
         yield 'GMP, null' => [null, \GMP::class, NotNormalizableValueException::class, $stringOrIntExpectedMessage];
         yield 'GMP, boolean' => [true, \GMP::class, NotNormalizableValueException::class, $stringOrIntExpectedMessage];
@@ -144,7 +210,13 @@ class NumberNormalizerTest extends TestCase
         yield 'GMP, non-numeric string' => ['foobar', \GMP::class, NotNormalizableValueException::class, $stringOrIntExpectedMessage];
         yield 'GMP, scale > 0' => ['1.23', \GMP::class, NotNormalizableValueException::class, $stringOrIntExpectedMessage];
         yield 'GMP, float' => [1.23, \GMP::class, NotNormalizableValueException::class, $stringOrIntExpectedMessage];
+    }
 
-        yield 'unsupported type' => ['1.23', \stdClass::class, InvalidArgumentException::class, 'Only "BcMath\Number" and "GMP" types are supported.'];
+    public function testDenormalizeBadValueThrows()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Only "BcMath\Number" and "GMP" types are supported.');
+
+        $this->normalizer->denormalize('1.23', \stdClass::class);
     }
 }
