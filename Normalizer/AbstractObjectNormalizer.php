@@ -1179,7 +1179,7 @@ abstract class AbstractObjectNormalizer extends AbstractNormalizer
             return $class;
         }
 
-        if (null === $type = $data[$mapping->getTypeProperty()] ?? null) {
+        if (null === $type = $data[$mapping->getTypeProperty()] ?? $mapping->getDefaultType()) {
             throw NotNormalizableValueException::createForUnexpectedDataType(\sprintf('Type property "%s" not found for the abstract object "%s".', $mapping->getTypeProperty(), $class), null, ['string'], isset($context['deserialization_path']) ? $context['deserialization_path'].'.'.$mapping->getTypeProperty() : $mapping->getTypeProperty(), false);
         }
 

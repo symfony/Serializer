@@ -7,6 +7,7 @@ CHANGELOG
  * Deprecate the `CompiledClassMetadataFactory` and `CompiledClassMetadataCacheWarmer` classes
  * Register `NormalizerInterface` and `DenormalizerInterface` aliases for named serializers
  * Add `NumberNormalizer` to normalize `BcMath\Number` and `GMP` as `string`
+ * Add `defaultType` to `DiscriminatorMap`
 
 7.2
 ---

@@ -560,6 +560,41 @@ class AbstractObjectNormalizerTest extends TestCase
         $this->assertInstanceOf(DummySecondChildQuux::class, $normalizedData->quux);
     }
 
+    public function testDenormalizeWithDiscriminatorMapUsesCorrectClassnameWithDefaultType()
+    {
+        $factory = new ClassMetadataFactory(new AttributeLoader());
+
+        $loaderMock = new class implements ClassMetadataFactoryInterface {
+            public function getMetadataFor($value): ClassMetadataInterface
+            {
+                if (AbstractDummy::class === $value) {
+                    return new ClassMetadata(
+                        AbstractDummy::class,
+                        new ClassDiscriminatorMapping('type', [
+                            'first' => AbstractDummyFirstChild::class,
+                            'second' => AbstractDummySecondChild::class,
+                        ], 'second')
+                    );
+                }
+
+                throw new InvalidArgumentException(sprintf('"%s" is not handled.', $value));
+            }
+
+            public function hasMetadataFor($value): bool
+            {
+                return AbstractDummy::class === $value;
+            }
+        };
+
+        $discriminatorResolver = new ClassDiscriminatorFromClassMetadata($loaderMock);
+        $normalizer = new AbstractObjectNormalizerDummy($factory, null, new PhpDocExtractor(), $discriminatorResolver);
+        $serializer = new Serializer([$normalizer]);
+        $normalizer->setSerializer($serializer);
+        $normalizedData = $normalizer->denormalize(['foo' => 'foo', 'baz' => 'baz', 'quux' => ['value' => 'quux']], AbstractDummy::class);
+
+        $this->assertInstanceOf(DummySecondChildQuux::class, $normalizedData->quux);
+    }
+
     public function testDenormalizeWithDiscriminatorMapAndObjectToPopulateUsesCorrectClassname()
     {
         $factory = new ClassMetadataFactory(new AttributeLoader());
