@@ -567,7 +567,7 @@ class SerializerPassTest extends TestCase
         $serializerPass = new SerializerPass();
         $serializerPass->process($container);
 
-        $this->assertEmpty($definition->getBindings());
+        $this->assertSame([], $definition->getBindings());
 
         $bindings = $container->getDefinition('n1.api')->getBindings();
         $this->assertArrayHasKey('array $defaultContext', $bindings);
